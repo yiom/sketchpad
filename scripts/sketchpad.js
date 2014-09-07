@@ -12,6 +12,9 @@ function Sketchpad(config) {
   var width = config.width || $(element).attr('data-width') || 0;
   var height = config.height || $(element).attr('data-height') || 0;
 
+  this.color = config.color || $(element).attr('data-color') || '#000000';
+  this.penSize = config.penSize || $(element).attr('data-penSize') || 5;
+
   //
   // Private API
   //
@@ -21,11 +24,32 @@ function Sketchpad(config) {
       x: event.pageX - this.canvas.offsetLeft,
       y: event.pageY - this.canvas.offsetTop,
     };
-  }
+  };
 
   var cursorMove = function(event) {
-    console.log(cursorPosition(event));
-  }
+    var currentPosition = cursorPosition(event);
+
+    draw(this._lastPosition, currentPosition, this.color, this.penSize);
+
+    this._lastPosition = currentPosition;
+  };
+
+  var draw = function(start, end, color, size) {
+    this.context.save();
+
+    this.context.lineJoin = 'round';
+    this.context.lineCap = 'round';
+    this.context.strokeStyle = color;
+    this.context.lineWidth = size;
+
+    this.context.beginPath();
+    this.context.moveTo(start.x, start.y);
+    this.context.lineTo(end.x, end.y);
+    this.context.closePath();
+    this.context.stroke();
+
+    this.context.restore();
+  };
 
   //
   // Public API
@@ -36,12 +60,13 @@ function Sketchpad(config) {
     this.canvas = $(this.element)[0];
     this.canvas.width = width;
     this.canvas.height = height;
-    this.content = this.canvas.getContext('2d');
+    this.context = this.canvas.getContext('2d');
 
     // Setup event listeners
     var view = this;
     var callback = cursorMove.bind(this);
     this.canvas.addEventListener('mousedown', function(event) {
+      view._lastPosition = cursorPosition(event);
       view.canvas.addEventListener('mousemove', callback);
     });
     this.canvas.addEventListener('mouseout', function(event) {
