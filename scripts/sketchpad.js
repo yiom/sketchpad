@@ -131,6 +131,21 @@ function Sketchpad(config) {
   // Public Functionalities
   //
 
+  this.animate = function(ms) {
+    this.clear();
+    var delay = ms;
+    for (var i = 0; i < this._strokes.length; i++) {
+      var stroke = this._strokes[i];
+      for (var j = 0; j < stroke.lines.length; j++) {
+        var line = stroke.lines[j];
+        setTimeout(
+            this._draw.bind(this, line.start, line.end, stroke.color, stroke.size),
+            delay);
+        delay += ms;
+      }
+    }
+  }
+
   this.clear = function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
   };
