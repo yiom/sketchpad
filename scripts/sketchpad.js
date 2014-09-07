@@ -16,6 +16,11 @@ function Sketchpad(config) {
   this.color = config.color || $(this.element).attr('data-color') || '#000000';
   this.penSize = config.penSize || $(this.element).attr('data-penSize') || 5;
 
+  // ReadOnly sketchpads may not be modified
+  this.readOnly = config.readOnly ||
+                  $(this.element).attr('data-readOnly') ||
+                  false;
+
   // Stroke control variables
   this.strokes = config.strokes || [];
   this._currentStroke = {
@@ -25,7 +30,7 @@ function Sketchpad(config) {
   }
 
   // Undo History
-  this._undoHistory = [];
+  this.undoHistory = config.undoHistory || [];
 
   //
   // Private API
@@ -90,6 +95,13 @@ function Sketchpad(config) {
     // Setup event listeners
     var sketching = false;
     var callback = this._cursorMove.bind(this);
+
+    this.redraw(this.strokes);
+
+    if (this.readOnly) {
+      return;
+    }
+
     this.canvas.addEventListener('mousedown', function(event) {
       this._lastPosition = this._cursorPosition(event);
       this._currentStroke.color = this.color;
@@ -112,7 +124,6 @@ function Sketchpad(config) {
       }
       this.canvas.removeEventListener('mousemove', callback);
     }.bind(this));
-    this.redraw(this.strokes);
   };
 
   this.drawStroke = function(stroke) {
@@ -131,6 +142,19 @@ function Sketchpad(config) {
   //
   // Public Functionalities
   //
+
+  this.toObject = function() {
+    return {
+      width: this.canvas.width,
+      height: this.canvas.height,
+      strokes: this.strokes,
+      undoHistory: this.undoHistory,
+    };
+  }
+
+  this.toJSON = function() {
+    return JSON.stringify(this.toObject());
+  }
 
   this.animate = function(ms) {
     this.clear();
@@ -153,14 +177,19 @@ function Sketchpad(config) {
 
   this.undo = function() {
     this.clear();
-    this._undoHistory.push(this.strokes.pop());
-    this.redraw(this.strokes);
+    var stroke = this.strokes.pop();
+    if (stroke) {
+      this.undoHistory.push(stroke);
+      this.redraw(this.strokes);
+    }
   };
 
   this.redo = function() {
-    var stroke = this._undoHistory.pop();
-    this.strokes.push(stroke);
-    this.drawStroke(stroke);
+    var stroke = this.undoHistory.pop();
+    if (stroke) {
+      this.strokes.push(stroke);
+      this.drawStroke(stroke);
+    }
   };
 
   this.reset();

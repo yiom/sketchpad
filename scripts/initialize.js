@@ -7,3 +7,7 @@ $(document).ready(function() {
     height: window.innerHeight,
   });
 });
+
+$(window).on('resize', function() {
+  sketchpad.reset();
+});
