@@ -17,7 +17,7 @@ function Sketchpad(config) {
   this.penSize = config.penSize || $(this.element).attr('data-penSize') || 5;
 
   // Stroke control variables
-  this._strokes = [];
+  this.strokes = config.strokes || [];
   this._currentStroke = {
     color: null,
     size: null,
@@ -100,18 +100,19 @@ function Sketchpad(config) {
     }.bind(this));
     this.canvas.addEventListener('mouseout', function(event) {
       if (sketching) {
-        this._strokes.push($.extend(true, {}, this._currentStroke));
+        this.strokes.push($.extend(true, {}, this._currentStroke));
         sketching = false;
       }
       this.canvas.removeEventListener('mousemove', callback);
     }.bind(this));
     this.canvas.addEventListener('mouseup', function(event) {
       if (sketching) {
-        this._strokes.push($.extend(true, {}, this._currentStroke));
+        this.strokes.push($.extend(true, {}, this._currentStroke));
         sketching = false;
       }
       this.canvas.removeEventListener('mousemove', callback);
     }.bind(this));
+    this.redraw(this.strokes);
   };
 
   this.drawStroke = function(stroke) {
@@ -134,8 +135,8 @@ function Sketchpad(config) {
   this.animate = function(ms) {
     this.clear();
     var delay = ms;
-    for (var i = 0; i < this._strokes.length; i++) {
-      var stroke = this._strokes[i];
+    for (var i = 0; i < this.strokes.length; i++) {
+      var stroke = this.strokes[i];
       for (var j = 0; j < stroke.lines.length; j++) {
         var line = stroke.lines[j];
         setTimeout(
@@ -152,13 +153,13 @@ function Sketchpad(config) {
 
   this.undo = function() {
     this.clear();
-    this._undoHistory.push(this._strokes.pop());
-    this.redraw(this._strokes);
+    this._undoHistory.push(this.strokes.pop());
+    this.redraw(this.strokes);
   };
 
   this.redo = function() {
     var stroke = this._undoHistory.pop();
-    this._strokes.push(stroke);
+    this.strokes.push(stroke);
     this.drawStroke(stroke);
   };
 
