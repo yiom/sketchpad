@@ -32,6 +32,9 @@ function Sketchpad(config) {
   // Undo History
   this.undoHistory = config.undoHistory || [];
 
+  // Animation function calls
+  this.animateIds = [];
+
   //
   // Private API
   //
@@ -156,20 +159,31 @@ function Sketchpad(config) {
     return JSON.stringify(this.toObject());
   }
 
-  this.animate = function(ms) {
+  this.animate = function(ms, loop, loopDelay) {
     this.clear();
     var delay = ms;
     for (var i = 0; i < this.strokes.length; i++) {
       var stroke = this.strokes[i];
       for (var j = 0; j < stroke.lines.length; j++) {
         var line = stroke.lines[j];
-        setTimeout(
-            this._draw.bind(this, line.start, line.end, stroke.color, stroke.size),
-            delay);
+        var callback = this._draw.bind(this, line.start, line.end,
+                                       stroke.color, stroke.size);
+        this.animateIds.push(setTimeout(callback, delay));
         delay += ms;
       }
     }
-  }
+    if (loop) {
+      loopDelay = loopDelay || 0;
+      var callback = this.animate.bind(this, ms, loop, loopDelay);
+      this.animateIds.push(setTimeout(callback, delay + loopDelay));
+    }
+  };
+
+  this.cancelAnimation = function() {
+    for (var i = 0; i < this.animateIds.length; i++) {
+      clearTimeout(this.animateIds[i]);
+    }
+  };
 
   this.clear = function() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
