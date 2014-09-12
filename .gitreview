@@ -1,5 +1,0 @@
-[gerrit]
-host=nihas.net
-port=29418
-project=sketchpad
-defaultbranch=master
