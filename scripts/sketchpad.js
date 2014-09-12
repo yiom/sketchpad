@@ -27,7 +27,7 @@ function Sketchpad(config) {
     color: null,
     size: null,
     lines: [],
-  }
+  };
 
   // Undo History
   this.undoHistory = config.undoHistory || [];
@@ -153,28 +153,29 @@ function Sketchpad(config) {
       strokes: this.strokes,
       undoHistory: this.undoHistory,
     };
-  }
+  };
 
   this.toJSON = function() {
     return JSON.stringify(this.toObject());
-  }
+  };
 
   this.animate = function(ms, loop, loopDelay) {
     this.clear();
     var delay = ms;
+    var callback = null;
     for (var i = 0; i < this.strokes.length; i++) {
       var stroke = this.strokes[i];
       for (var j = 0; j < stroke.lines.length; j++) {
         var line = stroke.lines[j];
-        var callback = this._draw.bind(this, line.start, line.end,
-                                       stroke.color, stroke.size);
+        callback = this._draw.bind(this, line.start, line.end,
+                                   stroke.color, stroke.size);
         this.animateIds.push(setTimeout(callback, delay));
         delay += ms;
       }
     }
     if (loop) {
       loopDelay = loopDelay || 0;
-      var callback = this.animate.bind(this, ms, loop, loopDelay);
+      callback = this.animate.bind(this, ms, loop, loopDelay);
       this.animateIds.push(setTimeout(callback, delay + loopDelay));
     }
   };
