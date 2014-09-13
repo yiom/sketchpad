@@ -136,6 +136,59 @@ Sketchpad.prototype._mouseMove = function(event) {
   this._lastPosition = currentPosition;
 };
 
+Sketchpad.prototype._touchStart = function(event) {
+  event.preventDefault();
+  if (this._sketching) {
+    return;
+  }
+  this._lastPosition = this._cursorPosition(event.changedTouches[0]);
+  this._currentStroke.color = this.color;
+  this._currentStroke.size = this.penSize;
+  this._currentStroke.lines = [];
+  this._sketching = true;
+  this.canvas.addEventListener('touchmove', this._touchMove, false);
+};
+
+Sketchpad.prototype._touchEnd = function(event) {
+  event.preventDefault();
+  if (this._sketching) {
+    this.strokes.push($.extend(true, {}, this._currentStroke));
+    this._sketching = false;
+  }
+  this.canvas.removeEventListener('touchmove', this._touchMove);
+};
+
+Sketchpad.prototype._touchCancel = function(event) {
+  event.preventDefault();
+  if (this._sketching) {
+    this.strokes.push($.extend(true, {}, this._currentStroke));
+    this._sketching = false;
+  }
+  this.canvas.removeEventListener('touchmove', this._touchMove);
+};
+
+Sketchpad.prototype._touchLeave = function(event) {
+  event.preventDefault();
+  if (this._sketching) {
+    this.strokes.push($.extend(true, {}, this._currentStroke));
+    this._sketching = false;
+  }
+  this.canvas.removeEventListener('touchmove', this._touchMove);
+};
+
+Sketchpad.prototype._touchMove = function(event) {
+  event.preventDefault();
+  var currentPosition = this._cursorPosition(event.changedTouches[0]);
+
+  this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
+  this._currentStroke.lines.push({
+    start: $.extend(true, {}, this._lastPosition),
+    end: $.extend(true, {}, currentPosition),
+  });
+
+  this._lastPosition = currentPosition;
+};
+
 //
 // Public API
 //
@@ -154,9 +207,16 @@ Sketchpad.prototype.reset = function() {
     return;
   }
 
+  // Mouse
   this.canvas.addEventListener('mousedown', this._mouseDown);
   this.canvas.addEventListener('mouseout', this._mouseUp);
   this.canvas.addEventListener('mouseup', this._mouseUp);
+
+  // Touch
+  this.canvas.addEventListener('touchstart', this._touchStart);
+  this.canvas.addEventListener('touchend', this._touchEnd);
+  this.canvas.addEventListener('touchcancel', this._touchCancel);
+  this.canvas.addEventListener('touchleave', this._touchLeave);
 };
 
 Sketchpad.prototype.drawStroke = function(stroke) {
