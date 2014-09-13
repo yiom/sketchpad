@@ -1,4 +1,8 @@
 function Sketchpad(config) {
+  // Enforces the context for all functions
+  for (var key in this.constructor.prototype) {
+    this[key] = this[key].bind(this);
+  }
 
   // Warn the user if no DOM element was selected
   if (!config.hasOwnProperty('element')) {
@@ -35,6 +39,9 @@ function Sketchpad(config) {
   // Animation function calls
   this.animateIds = [];
 
+  // Set sketching state
+  this._sketching = false;
+
   // Setup canvas sketching listeners
   this.reset();
 }
@@ -48,18 +55,6 @@ Sketchpad.prototype._cursorPosition = function(event) {
     x: event.pageX - this.canvas.offsetLeft,
     y: event.pageY - this.canvas.offsetTop,
   };
-};
-
-Sketchpad.prototype._cursorMove = function(event) {
-  var currentPosition = this._cursorPosition(event);
-
-  this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
-  this._currentStroke.lines.push({
-    start: $.extend(true, {}, this._lastPosition),
-    end: $.extend(true, {}, currentPosition),
-  });
-
-  this._lastPosition = currentPosition;
 };
 
 Sketchpad.prototype._draw = function(start, end, color, size) {
@@ -87,6 +82,39 @@ Sketchpad.prototype._stroke = function(start, end, color, size, compositeOperati
 };
 
 //
+// Callback Handlers
+//
+
+Sketchpad.prototype._mouseDown = function(event) {
+  this._lastPosition = this._cursorPosition(event);
+  this._currentStroke.color = this.color;
+  this._currentStroke.size = this.penSize;
+  this._currentStroke.lines = [];
+  this._sketching = true;
+  this.canvas.addEventListener('mousemove', this._mouseMove);
+};
+
+Sketchpad.prototype._mouseUp = function(event) {
+  if (this._sketching) {
+    this.strokes.push($.extend(true, {}, this._currentStroke));
+    this._sketching = false;
+  }
+  this.canvas.removeEventListener('mousemove', this._mouseMove);
+};
+
+Sketchpad.prototype._mouseMove = function(event) {
+  var currentPosition = this._cursorPosition(event);
+
+  this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
+  this._currentStroke.lines.push({
+    start: $.extend(true, {}, this._lastPosition),
+    end: $.extend(true, {}, currentPosition),
+  });
+
+  this._lastPosition = currentPosition;
+};
+
+//
 // Public API
 //
 
@@ -98,37 +126,15 @@ Sketchpad.prototype.reset = function() {
   this.context = this.canvas.getContext('2d');
 
   // Setup event listeners
-  var sketching = false;
-  var callback = this._cursorMove.bind(this);
-
   this.redraw(this.strokes);
 
   if (this.readOnly) {
     return;
   }
 
-  this.canvas.addEventListener('mousedown', function(event) {
-    this._lastPosition = this._cursorPosition(event);
-    this._currentStroke.color = this.color;
-    this._currentStroke.size = this.penSize;
-    this._currentStroke.lines = [];
-    sketching = true;
-    this.canvas.addEventListener('mousemove', callback);
-  }.bind(this));
-  this.canvas.addEventListener('mouseout', function(event) {
-    if (sketching) {
-      this.strokes.push($.extend(true, {}, this._currentStroke));
-      sketching = false;
-    }
-    this.canvas.removeEventListener('mousemove', callback);
-  }.bind(this));
-  this.canvas.addEventListener('mouseup', function(event) {
-    if (sketching) {
-      this.strokes.push($.extend(true, {}, this._currentStroke));
-      sketching = false;
-    }
-    this.canvas.removeEventListener('mousemove', callback);
-  }.bind(this));
+  this.canvas.addEventListener('mousedown', this._mouseDown);
+  this.canvas.addEventListener('mouseout', this._mouseUp);
+  this.canvas.addEventListener('mouseup', this._mouseUp);
 };
 
 Sketchpad.prototype.drawStroke = function(stroke) {
