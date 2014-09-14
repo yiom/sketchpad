@@ -1,0 +1,22 @@
+{
+  "name": "sketchpad",
+  "version": "0.0.0",
+  "description": "A simple sketchpad.",
+  "devDependencies": {
+    "gulp": "~3.8.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yiom/sketchpad.git"
+  },
+  "keywords": [
+    "sketchpad",
+    "ember",
+    "javascript"
+  ],
+  "author": "Yiom",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yiom/sketchpad/issues"
+  }
+}

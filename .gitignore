@@ -1,2 +1,8 @@
-# vim temporary files
+# temporary files
 *.swp
+*~
+
+# others
+.DS_Store
+node_modules
+*.log
