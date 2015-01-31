@@ -46,6 +46,9 @@ function Sketchpad(config) {
   this.readOnly = config.readOnly ||
                   $(this.element).attr('data-readOnly') ||
                   false;
+  if (!this.readOnly) {
+      $(this.element).css({cursor: 'crosshair'});
+  }
 
   // Stroke control variables
   this.strokes = config.strokes || [];
