@@ -19,7 +19,7 @@ Having a canvas on the DOM:
 ```
 You should simply configure it by instantiating the Sketchpad:
 ```
-var sketchpad = Sketchpad({
+var sketchpad = new Sketchpad({
   element: '#sketchpad',
   width: 400,
   height: 400,
