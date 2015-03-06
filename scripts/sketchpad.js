@@ -77,8 +77,8 @@ function Sketchpad(config) {
 
 Sketchpad.prototype._cursorPosition = function(event) {
   return {
-    x: event.pageX - this.canvas.offsetLeft,
-    y: event.pageY - this.canvas.offsetTop,
+    x: event.pageX - $(this.canvas).offset().left,
+    y: event.pageY - $(this.canvas).offset().top,
   };
 };
 
