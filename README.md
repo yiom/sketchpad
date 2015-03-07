@@ -1,14 +1,14 @@
 # Sketchpad
-A simple sketchpad project. Compatible with Ember.js.
+A simple sketchpad project. ([Live Demo](http://yiom.github.io/sketchpad/))
 
 ## Authors
 - [Nihey Takizawa](https://github.com/nihey)
 - [Jean Lucas](https://github.com/jeanleonino)
 
 ## Instalation
-To install Sketchpad in an Ember.js application that uses [Ember-cli](https://github.com/stefanpenner/ember-cli):
+To install Sketchpad via [Bower](https://github.com/bower/bower):
 ```
-npm install sketchpad --save-dev
+$ bower install sketchpad --save
 ```
 
 ## Usage
