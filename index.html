@@ -75,15 +75,42 @@
         <div style="text-align: center">
           <canvas class="sketchpad" id="sketchpad"><canvas>
         </div>
-        <script>
-          $(document).ready(function() {
-            var sketchpad = new Sketchpad({
-              element: '#sketchpad',
-              width: 400,
-              height: 400
-            });
-          });
-        </script>
+        <p>
+          Our API also provides some useful functionalities:
+        </p>
+        <div style="text-align: center">
+          <button onclick="undo()">undo</button>
+          <button onclick="redo()">redo</button>
+          <input id="color-picker" type="color">
+          <input id="size-picker" type="range" min="1" max="50">
+          <button onclick="animate()">animate</button>
+        </div>
+        <p>Undo</p>
+        <pre><code>sketchpad.undo()</code></pre>
+        <p>Redo</p>
+        <pre><code>sketchpad.redo()</code></pre>
+        <p>Change stroke color</p>
+        <pre><code>sketchpad.color = '#FFF'</code></pre>
+        <p>Change stroke size</p>
+        <pre><code>sketchpad.penSize = 10</code></pre>
+        <p>Playback each sketchpad stroke (10ms delay between each line piece)</p>
+        <pre><code>sketchpad.animate(10)</code></pre>
+        <p>Recover sketchpad JSON or Object Settings</p>
+<pre><code>sketchpad.toJSON()
+sketchpad.toObject()</code></pre>
+        <p>
+          By recovering the sketchpad JSON or Object you can then clone the
+          sketchpad by coding:
+        </p>
+<pre><code>var settings = sketchpad.toObject()
+settings.element = '#other-sketchpad'
+var otherSketchpad = new Sketchpad(settings)</code></pre>
+        <div style="text-align: center; margin: 12px 0 12px">
+          <button id="recover-button" onclick="recover()">recover</button>
+        </div>
+        <div style="text-align: center">
+          <canvas class="sketchpad" id="other-sketchpad"><canvas>
+        </div>
 
       </section>
     </div>
@@ -95,6 +122,43 @@
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
+
+    <script>
+      var sketchpad;
+      $(document).ready(function() {
+        sketchpad = new Sketchpad({
+          element: '#sketchpad',
+          width: 400,
+          height: 400
+        });
+        $('#color-picker').change(color);
+        $('#color-picker').val('#000');
+        $('#size-picker').change(size);
+        $('#size-picker').val(1);
+      });
+      function undo() {
+        sketchpad.undo();
+      }
+      function redo() {
+        sketchpad.redo();
+      }
+      function color(event) {
+        sketchpad.color = $(event.target).val();
+      }
+      function size(event) {
+        sketchpad.penSize = $(event.target).val();
+      }
+      function animate(event) {
+        sketchpad.animate(10);
+      }
+
+      function recover(event) {
+        var settings = sketchpad.toObject();
+        settings.element = '#other-sketchpad';
+        var otherSketchpad = new Sketchpad(settings);
+        $('#recover-button').hide();
+      }
+    </script>
 
     <script type="text/javascript">
       var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
