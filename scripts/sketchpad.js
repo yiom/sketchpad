@@ -32,22 +32,27 @@ function Sketchpad(config) {
     return;
   }
 
-  this.element = config.element;
+  if (typeof(config.element) === 'string') {
+    this.element = $(config.element);
+  }
+  else {
+    this.element = config.element;
+  }
 
   // Width can be defined on the HTML or programatically
-  this._width = config.width || $(this.element).attr('data-width') || 0;
-  this._height = config.height || $(this.element).attr('data-height') || 0;
+  this._width = config.width || this.element.attr('data-width') || 0;
+  this._height = config.height || this.element.attr('data-height') || 0;
 
   // Pen attributes
-  this.color = config.color || $(this.element).attr('data-color') || '#000000';
-  this.penSize = config.penSize || $(this.element).attr('data-penSize') || 5;
+  this.color = config.color || this.element.attr('data-color') || '#000000';
+  this.penSize = config.penSize || this.element.attr('data-penSize') || 5;
 
   // ReadOnly sketchpads may not be modified
   this.readOnly = config.readOnly ||
-                  $(this.element).attr('data-readOnly') ||
+                  this.element.attr('data-readOnly') ||
                   false;
   if (!this.readOnly) {
-      $(this.element).css({cursor: 'crosshair'});
+      this.element.css({cursor: 'crosshair'});
   }
 
   // Stroke control variables
@@ -198,7 +203,7 @@ Sketchpad.prototype._touchMove = function(event) {
 
 Sketchpad.prototype.reset = function() {
   // Set attributes
-  this.canvas = $(this.element)[0];
+  this.canvas = this.element[0];
   this.canvas.width = this._width;
   this.canvas.height = this._height;
   this.context = this.canvas.getContext('2d');
