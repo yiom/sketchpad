@@ -1,7 +1,7 @@
 # Sketchpad
 A simple sketchpad project. ([Live Demo](http://yiom.github.io/sketchpad/))
 
-[![NPM](https://nodei.co/npm/sketchpad.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/sketchpad/)
+[![NPM](https://nodei.co/npm/sketchpad.png?downloads=true)](https://nodei.co/npm/sketchpad/)
 
 ## Authors
 - [Nihey Takizawa](https://github.com/nihey)
