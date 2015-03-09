@@ -1,6 +1,6 @@
 {
   "name": "sketchpad",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A simple sketchpad.",
   "devDependencies": {
     "gulp": "~3.8.8"
