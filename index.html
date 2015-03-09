@@ -83,7 +83,7 @@
           <button onclick="redo()">redo</button>
           <input id="color-picker" type="color">
           <input id="size-picker" type="range" min="1" max="50">
-          <button onclick="animate()">animate</button>
+          <button onclick="animateSketchpad()">animate</button>
         </div>
         <p>Undo</p>
         <pre><code>sketchpad.undo()</code></pre>
@@ -148,7 +148,7 @@ var otherSketchpad = new Sketchpad(settings)</code></pre>
       function size(event) {
         sketchpad.penSize = $(event.target).val();
       }
-      function animate(event) {
+      function animateSketchpad() {
         sketchpad.animate(10);
       }
 
