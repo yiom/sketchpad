@@ -12,15 +12,19 @@ To install Sketchpad via [Bower](https://github.com/bower/bower):
 ```
 $ bower install sketchpad --save
 ```
+or use npm:
+```
+npm install sketchpad
+```
 
 ## Usage
 
 Having a canvas on the DOM:
-```
+```html
 <canvas id="sketchpad"></canvas>
 ```
 You should simply configure it by instantiating the Sketchpad:
-```
+```js
 var sketchpad = new Sketchpad({
   element: '#sketchpad',
   width: 400,
@@ -28,7 +32,7 @@ var sketchpad = new Sketchpad({
 });
 ```
 After that, the API provides a variety of functionalities:
-```
+```js
 // undo
 sketchpad.undo();
 
@@ -48,5 +52,4 @@ sketchpad.animate(10);
 For more documentation about the project, visit: TBA
 
 ## Contribute
-
-TBA
+Just send PR :-)
