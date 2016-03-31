@@ -51,5 +51,9 @@ sketchpad.animate(10);
 
 For more documentation about the project, visit: TBA
 
-## Contribute
-Just send PR :-)
+## Contributing
+
+* Fork this repository.
+* Install with `npm install`
+* Send a PR
+
