@@ -1,5 +1,5 @@
 {
-  "name": "sketchpad",
+  "name": "@amaplex-software/sketchpad",
   "version": "0.1.0",
   "description": "A simple sketchpad.",
   "public": true,
