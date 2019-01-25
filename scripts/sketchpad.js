@@ -126,7 +126,12 @@ Sketchpad.prototype._mouseDown = function(event) {
 
 Sketchpad.prototype._mouseUp = function(event) {
   if (this._sketching) {
-    this.strokes.push($.extend(true, {}, this._currentStroke));
+
+    // Check that the current stroke is not empty
+    if (this._currentStroke.lines.length > 0) {
+      this.strokes.push($.extend(true, {}, this._currentStroke));
+    }
+
     this._sketching = false;
   }
   this.canvas.removeEventListener('mousemove', this._mouseMove);
