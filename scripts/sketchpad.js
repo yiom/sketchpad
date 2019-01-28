@@ -87,28 +87,37 @@ Sketchpad.prototype._cursorPosition = function(event) {
   };
 };
 
-Sketchpad.prototype._draw = function(start, end, color, size) {
-  this._stroke(start, end, color, size, 'source-over');
+Sketchpad.prototype._computeMidPoint = function(p1, p2) {
+  return {
+    x: (p1.x + p2.x) / 2,
+    y: (p1.y + p2.y) / 2
+  };
 };
 
-Sketchpad.prototype._erase = function(start, end, color, size) {
-  this._stroke(start, end, color, size, 'destination-out');
+Sketchpad.prototype._addStroke = function(stroke) {
+  if (stroke.lines.length > 0) {
+    this.strokes.push($.extend(true, {}, stroke));
+  }
 };
 
-Sketchpad.prototype._stroke = function(start, end, color, size, compositeOperation) {
-  this.context.save();
-  this.context.lineJoin = 'round';
-  this.context.lineCap = 'round';
-  this.context.strokeStyle = color;
-  this.context.lineWidth = size;
-  this.context.globalCompositeOperation = compositeOperation;
-  this.context.beginPath();
-  this.context.moveTo(start.x, start.y);
-  this.context.lineTo(end.x, end.y);
-  this.context.closePath();
-  this.context.stroke();
+Sketchpad.prototype._animate = function(currentStrokeId, currentLineId, strokeColor, strokeSize) {
+  this.clear();
 
-  this.context.restore();
+  // Draw complete strokes
+  for (var i = 0; i < currentStrokeId; i++) {
+    this.drawStroke(this.strokes[i]);
+  }
+
+  // Draw current stroke
+  var currentLines = this.strokes[currentStrokeId].lines;
+  var displayedLines = currentLines.slice(0, currentLineId + 1);
+  var displayedStroke = {
+    color: strokeColor,
+    size: strokeSize,
+    lines: displayedLines,
+  };
+
+  this.drawStroke(displayedStroke);
 };
 
 //
@@ -126,12 +135,7 @@ Sketchpad.prototype._mouseDown = function(event) {
 
 Sketchpad.prototype._mouseUp = function(event) {
   if (this._sketching) {
-
-    // Check that the current stroke is not empty
-    if (this._currentStroke.lines.length > 0) {
-      this.strokes.push($.extend(true, {}, this._currentStroke));
-    }
-
+    this._addStroke(this._currentStroke);
     this._sketching = false;
   }
   this.canvas.removeEventListener('mousemove', this._mouseMove);
@@ -140,13 +144,14 @@ Sketchpad.prototype._mouseUp = function(event) {
 Sketchpad.prototype._mouseMove = function(event) {
   var currentPosition = this._cursorPosition(event);
 
-  this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
   this._currentStroke.lines.push({
     start: $.extend(true, {}, this._lastPosition),
     end: $.extend(true, {}, currentPosition),
   });
 
   this._lastPosition = currentPosition;
+  this.redraw(this.strokes);
+  this.drawStroke(this._currentStroke);
 };
 
 Sketchpad.prototype._touchStart = function(event) {
@@ -165,41 +170,27 @@ Sketchpad.prototype._touchStart = function(event) {
 Sketchpad.prototype._touchEnd = function(event) {
   event.preventDefault();
   if (this._sketching) {
-    this.strokes.push($.extend(true, {}, this._currentStroke));
+    this._addStroke(this._currentStroke);
     this._sketching = false;
   }
   this.canvas.removeEventListener('touchmove', this._touchMove);
 };
 
-Sketchpad.prototype._touchCancel = function(event) {
-  event.preventDefault();
-  if (this._sketching) {
-    this.strokes.push($.extend(true, {}, this._currentStroke));
-    this._sketching = false;
-  }
-  this.canvas.removeEventListener('touchmove', this._touchMove);
-};
-
-Sketchpad.prototype._touchLeave = function(event) {
-  event.preventDefault();
-  if (this._sketching) {
-    this.strokes.push($.extend(true, {}, this._currentStroke));
-    this._sketching = false;
-  }
-  this.canvas.removeEventListener('touchmove', this._touchMove);
-};
+Sketchpad.prototype._touchCancel = Sketchpad.prototype._touchEnd;
+Sketchpad.prototype._touchLeave = Sketchpad.prototype._touchEnd;
 
 Sketchpad.prototype._touchMove = function(event) {
   event.preventDefault();
   var currentPosition = this._cursorPosition(event.changedTouches[0]);
 
-  this._draw(this._lastPosition, currentPosition, this.color, this.penSize);
   this._currentStroke.lines.push({
     start: $.extend(true, {}, this._lastPosition),
     end: $.extend(true, {}, currentPosition),
   });
 
   this._lastPosition = currentPosition;
+  this.redraw(this.strokes);
+  this.drawStroke(this._currentStroke);
 };
 
 //
@@ -233,13 +224,36 @@ Sketchpad.prototype.reset = function() {
 };
 
 Sketchpad.prototype.drawStroke = function(stroke) {
-  for (var j = 0; j < stroke.lines.length; j++) {
-    var line = stroke.lines[j];
-    this._draw(line.start, line.end, stroke.color, stroke.size);
+  if (stroke.lines.length < 1) {
+    return;
   }
+
+  var lines = stroke.lines;
+  var startPoint = lines[0].start;
+  var endPoint = lines[0].end;
+
+  this.context.lineJoin = 'round';
+  this.context.lineCap = 'round';
+  this.context.strokeStyle = stroke.color;
+  this.context.lineWidth = stroke.size;
+
+  this.context.beginPath();
+  this.context.moveTo(startPoint.x, startPoint.y);
+
+  for (var j = 0; j < lines.length; j++) {
+    startPoint = lines[j].start;
+    endPoint = lines[j].end;
+    var midPoint = this._computeMidPoint(startPoint, endPoint);
+    this.context.quadraticCurveTo(startPoint.x, startPoint.y, midPoint.x, midPoint.y);
+  }
+
+  this.context.lineTo(endPoint.x, endPoint.y);
+  this.context.stroke();
 };
 
 Sketchpad.prototype.redraw = function(strokes) {
+  this.clear();
+
   for (var i = 0; i < strokes.length; i++) {
     this.drawStroke(strokes[i]);
   }
@@ -265,9 +279,7 @@ Sketchpad.prototype.animate = function(ms, loop, loopDelay) {
   for (var i = 0; i < this.strokes.length; i++) {
     var stroke = this.strokes[i];
     for (var j = 0; j < stroke.lines.length; j++) {
-      var line = stroke.lines[j];
-      callback = this._draw.bind(this, line.start, line.end,
-                                 stroke.color, stroke.size);
+      callback = this._animate.bind(this, i, j, stroke.color, stroke.size);
       this.animateIds.push(setTimeout(callback, delay));
       delay += ms;
     }
@@ -290,7 +302,6 @@ Sketchpad.prototype.clear = function() {
 };
 
 Sketchpad.prototype.undo = function() {
-  this.clear();
   var stroke = this.strokes.pop();
   if (stroke) {
     this.undoHistory.push(stroke);
