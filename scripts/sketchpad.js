@@ -80,11 +80,35 @@ function Sketchpad(config) {
 // Private API
 //
 
-Sketchpad.prototype._cursorPosition = function(event) {
+Sketchpad.prototype._getPointRelativeToCanvas = function(point) {
   return {
+    x: point.x / this.canvas.width,
+    y: point.y / this.canvas.height
+  };
+};
+
+Sketchpad.prototype._normalizePoint = function(point) {
+  return {
+    x: point.x * this.canvas.width,
+    y: point.y * this.canvas.height
+  };
+};
+
+Sketchpad.prototype._getCursorPositionRelativeToCanvas = function(event) {
+  var cursorPosition = {
     x: event.pageX - $(this.canvas).offset().left,
     y: event.pageY - $(this.canvas).offset().top,
   };
+
+  return this._getPointRelativeToCanvas(cursorPosition);
+};
+
+Sketchpad.prototype._getLineSizeRelativeToCanvas = function(size) {
+  return size / this.canvas.width;
+};
+
+Sketchpad.prototype._normalizeLineSize = function(size) {
+  return size * this.canvas.width;
 };
 
 Sketchpad.prototype._computeMidPoint = function(p1, p2) {
@@ -125,9 +149,9 @@ Sketchpad.prototype._animate = function(currentStrokeId, currentLineId, strokeCo
 //
 
 Sketchpad.prototype._mouseDown = function(event) {
-  this._lastPosition = this._cursorPosition(event);
+  this._lastPosition = this._getCursorPositionRelativeToCanvas(event);
   this._currentStroke.color = this.color;
-  this._currentStroke.size = this.penSize;
+  this._currentStroke.size = this._getLineSizeRelativeToCanvas(this.penSize);
   this._currentStroke.lines = [];
   this._sketching = true;
   this.canvas.addEventListener('mousemove', this._mouseMove);
@@ -142,7 +166,7 @@ Sketchpad.prototype._mouseUp = function(event) {
 };
 
 Sketchpad.prototype._mouseMove = function(event) {
-  var currentPosition = this._cursorPosition(event);
+  var currentPosition = this._getCursorPositionRelativeToCanvas(event);
 
   this._currentStroke.lines.push({
     start: $.extend(true, {}, this._lastPosition),
@@ -159,9 +183,9 @@ Sketchpad.prototype._touchStart = function(event) {
   if (this._sketching) {
     return;
   }
-  this._lastPosition = this._cursorPosition(event.changedTouches[0]);
+  this._lastPosition = this._getCursorPositionRelativeToCanvas(event.changedTouches[0]);
   this._currentStroke.color = this.color;
-  this._currentStroke.size = this.penSize;
+  this._currentStroke.size = this._getLineSizeRelativeToCanvas(this.penSize);
   this._currentStroke.lines = [];
   this._sketching = true;
   this.canvas.addEventListener('touchmove', this._touchMove, false);
@@ -181,7 +205,7 @@ Sketchpad.prototype._touchLeave = Sketchpad.prototype._touchEnd;
 
 Sketchpad.prototype._touchMove = function(event) {
   event.preventDefault();
-  var currentPosition = this._cursorPosition(event.changedTouches[0]);
+  var currentPosition = this._getCursorPositionRelativeToCanvas(event.changedTouches[0]);
 
   this._currentStroke.lines.push({
     start: $.extend(true, {}, this._lastPosition),
@@ -229,20 +253,20 @@ Sketchpad.prototype.drawStroke = function(stroke) {
   }
 
   var lines = stroke.lines;
-  var startPoint = lines[0].start;
-  var endPoint = lines[0].end;
+  var startPoint = this._normalizePoint(lines[0].start);
+  var endPoint = this._normalizePoint(lines[0].end);
 
   this.context.lineJoin = 'round';
   this.context.lineCap = 'round';
   this.context.strokeStyle = stroke.color;
-  this.context.lineWidth = stroke.size;
+  this.context.lineWidth = this._normalizeLineSize(stroke.size);
 
   this.context.beginPath();
   this.context.moveTo(startPoint.x, startPoint.y);
 
   for (var j = 0; j < lines.length; j++) {
-    startPoint = lines[j].start;
-    endPoint = lines[j].end;
+    startPoint = this._normalizePoint(lines[j].start);
+    endPoint = this._normalizePoint(lines[j].end);
     var midPoint = this._computeMidPoint(startPoint, endPoint);
     this.context.quadraticCurveTo(startPoint.x, startPoint.y, midPoint.x, midPoint.y);
   }
