@@ -42,6 +42,7 @@ function Sketchpad(config) {
   // Width can be defined on the HTML or programatically
   this._width = config.width || this.element.attr('data-width') || 0;
   this._height = config.height || this.element.attr('data-height') || 0;
+  this._aspectRatio = (this._width === 0 || this._height === 0) ? 1 : this._width / this._height;
 
   // Pen attributes
   this.color = config.color || this.element.attr('data-color') || '#000000';
@@ -226,6 +227,8 @@ Sketchpad.prototype.reset = function() {
   this.canvas = this.element[0];
   this.canvas.width = this._width;
   this.canvas.height = this._height;
+  this.canvas.style.width = this._width + 'px';
+  this.canvas.style.height = this._height + 'px';
   this.context = this.canvas.getContext('2d');
 
   // Setup event listeners
@@ -339,4 +342,10 @@ Sketchpad.prototype.redo = function() {
     this.strokes.push(stroke);
     this.drawStroke(stroke);
   }
+};
+
+Sketchpad.prototype.resize = function(width) {
+  this._width = width;
+  this._height = this._aspectRatio * this._width;
+  this.reset();
 };
