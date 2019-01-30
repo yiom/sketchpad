@@ -42,7 +42,13 @@ function Sketchpad(config) {
   // Width can be defined on the HTML or programatically
   this._width = config.width || this.element.attr('data-width') || 0;
   this._height = config.height || this.element.attr('data-height') || 0;
-  this._aspectRatio = (this._width === 0 || this._height === 0) ? 1 : this._width / this._height;
+
+  if (this._width === 0 || this._height === 0) {
+    console.error('SKETCHPAD ERROR: Sketchpad width and height must be greater than zero');
+    return;
+  }
+
+  this._aspectRatio = this._height / this._width;
 
   // Pen attributes
   this.color = config.color || this.element.attr('data-color') || '#000000';
