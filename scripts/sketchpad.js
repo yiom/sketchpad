@@ -231,8 +231,6 @@ Sketchpad.prototype.reset = function() {
   this.canvas = this.element[0];
   this.canvas.width = this._width;
   this.canvas.height = this._height;
-  this.canvas.style.width = this._width + 'px';
-  this.canvas.style.height = this._height + 'px';
   this.context = this.canvas.getContext('2d');
 
   // Setup event listeners
