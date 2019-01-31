@@ -48,8 +48,6 @@ function Sketchpad(config) {
     return;
   }
 
-  this._aspectRatio = this._height / this._width;
-
   // Pen attributes
   this.color = config.color || this.element.attr('data-color') || '#000000';
   this.penSize = config.penSize || this.element.attr('data-penSize') || 5;
@@ -350,8 +348,8 @@ Sketchpad.prototype.redo = function() {
   }
 };
 
-Sketchpad.prototype.resize = function(width) {
+Sketchpad.prototype.resize = function(width, height) {
   this._width = width;
-  this._height = this._aspectRatio * this._width;
+  this._height = height;
   this.reset();
 };
